@@ -146,7 +146,7 @@ void printPrompt(char* str,int print_prompt_flag) {
 }
 
 void cmd_binary(char** tokens,int token_len,char *envp[]) {
-    int status,id;
+    int status;
     int path_index,path_len;
     int pid=fork();
     if(pid==0) {
@@ -180,10 +180,14 @@ void cmd_binary(char** tokens,int token_len,char *envp[]) {
         exit(0);
     }
     else if(pid > 0) {
-        //parent
-        while ((id = waitpid(-1,&status,0)) != -1) /* pick up all the dead children */
-            //printf("process %d exits\n", pid);
-            ;
+        if(pid == waitpid(pid,&status,0)){ /* pick up all the dead children */ 
+	    //printf("child exit successful\n");
+	    ;
+	}
+	else{
+	    printf("error in waitpid. Error no is %d\n",status);
+	    exit(1);
+	}
     }
     else {
         //error on fork
@@ -193,7 +197,7 @@ void cmd_binary(char** tokens,int token_len,char *envp[]) {
 }
 
 void cmd_script(char** tokens,int token_len,char *envp[]) {
-    int status,id;
+    int status;
     int pid=fork();
     if(pid==0) {
         //child
@@ -206,9 +210,14 @@ void cmd_script(char** tokens,int token_len,char *envp[]) {
     }
     else if(pid > 0) {
         //parent
-        while ((id = waitpid(-1,&status,0)) != -1) /* pick up all the dead children */
-            //printf("process %d exits\n", pid);
-            ;
+        if(pid == waitpid(pid,&status,0)){ /* wait till child exits */ 
+	    //printf("child exit successful\n");
+	    ;
+	}
+	else{
+	    printf("error in waitpid. Error no is %d\n",status);
+	    exit(1);
+	}
     }
     else {
         //error on fork
